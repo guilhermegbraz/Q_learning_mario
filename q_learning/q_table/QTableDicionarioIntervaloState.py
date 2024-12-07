@@ -4,14 +4,15 @@ from typing import List, Dict
 import rominfo
 
 
-class QTableDicionarioState(QTableDicionarioPosicaoStep):
+class QTableDicionarioIntervaloState(QTableDicionarioPosicaoStep):
     def __init__(self):
         super().__init__()
         self.q_table: Dict[str, List[AcaoMario]] = {}
 
     def cria_chave(self, ram, step):
-        state, _, _ = rominfo.getState(ram, 6)
-        return f"state: {state}"
+        state, x, _ = rominfo.getState(ram, 6)
+        return f"trecho: {x // 3500} state: {state}"
+
 
     def adiciona_elemento(self, chave: str, acoes: List[str], dicionario_codigos: dict) -> bool:
         if len(chave) >= 344:

@@ -4,6 +4,7 @@ from typing import List
 
 from q_learning.AcaoMario import AcaoMario
 
+
 class QTableInterface(ABC):
 
     @abstractmethod
@@ -34,4 +35,9 @@ class QTableInterface(ABC):
     @abstractmethod
     def retorna_acoes_estado(self, ram, step) -> List[AcaoMario]:
         """Verifica se um estado já existe na tabela Q."""
+        pass
+
+    @abstractmethod
+    def to_string(self) -> str:
+        """Retorna a q-table como uma string"""
         pass

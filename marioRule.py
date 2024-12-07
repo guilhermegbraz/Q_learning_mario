@@ -12,7 +12,7 @@ from numpy.random import uniform, choice, random
 import pickle
 import os
 import time
-from rominfo import *
+import rominfo
 
 # from utils import *
 import utils
@@ -96,7 +96,7 @@ def qlearning():
         print(f"Iniciando episódio {episode + 1}/{n_episodes}...")
         env.reset()
         ram = getRam(env)
-        state, x, y = getState(ram, radius=radius)  # Obtém o estado inicial
+        state, x, y = rominfo.getState(ram, radius=radius)  # Obtém o estado inicial
         print(state)
         for step in range(max_steps_per_episode):
             # Inicializa estado na Q-Table, se necessário
@@ -110,15 +110,15 @@ def qlearning():
                 action = np.argmax(q_table[state])  # Explorar
 
             print(f"posicao mario: ({x}, {y})")
-            print(f"Mario esta no chao? : {esta_no_chao(getState(ram, radius)[0])}")
-            printState(getState(ram, radius)[0])
+            print(f"Mario esta no chao? : {esta_no_chao(rominfo.getState(ram, radius)[0])}")
+            printState(rominfo.getState(ram, radius)[0])
             print(150 * "-")
 
             # Executa ação no jogo
             rw, info = utils.performAction(actions_list[action], env)
             env.render()
             ram = getRam(env)
-            new_state, new_x, new_y = getState(ram, radius=radius)
+            new_state, new_x, new_y = rominfo.getState(ram, radius=radius)
             collision = check_collision(ram)  # Verifica colisões
 
             # Calcula recompensa
@@ -159,10 +159,10 @@ def rule():
                 return
             except:
                 pass
-            state, x, y = getInputs(ram)
+            state, x, y = rominfo.getInputs(ram)
             print(f"posicao mario: ({x}, {y})")
-            print(f"Mario esta no chao? : {esta_no_chao(getState(ram, radius)[0])}")
-            printState(getState(ram, radius)[0])
+            print(f"Mario esta no chao? : {esta_no_chao(rominfo.getState(ram, radius)[0])}")
+            printState(rominfo.getState(ram, radius)[0])
             print(150*"-")
 
             for i in state:
@@ -216,8 +216,8 @@ def check_collision(ram):
     """
     Verifica se o Mario colidiu com um inimigo ou caiu em um buraco.
     """
-    marioX, marioY, layer1x, layer1y = getXY(ram)
-    sprites = getSprites(ram)
+    marioX, marioY, layer1x, layer1y = rominfo.getXY(ram)
+    sprites = rominfo.getSprites(ram)
     # Verifica colisão com sprites (inimigos e obstáculos dinâmicos)
     # print(f"Mario x,y: {marioX}, {marioY}\nSprites {sprites}")
     for sprite in sprites:
@@ -230,8 +230,8 @@ def check_collision(ram):
 
 
 def main():
-    # r = rule()
-    qlearning()
+    r = rule()
+    # qlearning()
 
 
 if __name__ == "__main__":

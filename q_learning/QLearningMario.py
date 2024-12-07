@@ -20,12 +20,16 @@ class QLearningMario:
         env = retro.make(game='SuperMarioWorld-Snes', state=self.fase, players=1)
         maximo_passos = 0
         pos_x = 0
+        play_mais_passos = []
+        play_mais_longe = []
         for episode in range(n_episodes):
+            play = []
             print(f"Iniciando episódio {episode + 1}/{n_episodes}...")
             env.reset()
             ram = self.getRam(env)
             state, x, y = getState(ram, radius=radius)
             for step in range(max_steps_per_episode):
+                play.append(env)
 
                 if not q_table.estado_ja_existe(ram, step):
                     q_table.adicionar_novo_estado(ram, step, acoes)
@@ -72,10 +76,7 @@ class QLearningMario:
 
                 # print( f"Adicionei o valor {q_table.retorna_acoes_estado(ram, step)} em qtable[{step}][{q_table.cria_chave(ram, step)}]")
 
-                if step > maximo_passos:
-                    maximo_passos = step
-                if x > pos_x:
-                    pos_x = x
+                play_mais_longe.append(self.getStateMatrix(new_state, 6))
 
                 # Verifica término do episódio
                 if collision:
@@ -87,14 +88,16 @@ class QLearningMario:
                     break
                 elif step == max_steps_per_episode - 1:
                     print(f"Episódio {episode + 1}: Mario sobreviveu ao limite de passos.")
-                    return pos_x, step
-                if new_x >= 4800 or new_x == 0:
+                    env.close()
+                    return pos_x, step, play_mais_longe, play_mais_passos
+                if new_x >= 4900 or new_x == 0:
                     print(
                         f"Mario concluiu a fase com {step} iterações, após {episode} tentativas. posX é {new_x}; A tabela final é:")
                     env.close()
-                    return pos_x, step
+                    return pos_x, step, play_mais_longe, play_mais_passos
                 ram, state, x, y = ram_novo_estado, new_state, new_x, new_y
-        return pos_x, step
+        env.close()
+        return pos_x, step, play_mais_longe, play_mais_passos
 
     def getStateMatrix(self, state, radius):
         state_n = np.reshape(state.split(','), (2 * radius + 1, 2 * radius + 1))
@@ -131,8 +134,9 @@ class QLearningMario:
         # print(f"{35*'#'} Mario Pulou {35*'#'}")
         while not self.mario_esta_no_chao(getState(self.getRam(env), radius)[0], radius):
             # print("Esperando mario voltar pro chao")
+            # print(f"Mario esta no chao? : {self.mario_esta_no_chao(getState(self.getRam(env), radius)[0], radius)}")
             # self.printState(getState(self.getRam(env), radius)[0], radius)
-            # print()
+            # print(150 * "-")
             rw, info = utils.performAction(131, env)
             rw, info = utils.performAction(1, env)
             env.render()

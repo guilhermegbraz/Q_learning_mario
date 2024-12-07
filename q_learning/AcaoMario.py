@@ -1,3 +1,5 @@
+import re
+
 class AcaoMario:
     def __init__(self, descricao: str, codigo: int):
         self._descricao = descricao  # Atributos privados (convenção)
@@ -51,6 +53,26 @@ class AcaoMario:
         if not isinstance(other, AcaoMario):
             return False
         return self.codigo == other.codigo
+
+    @classmethod
+    def from_string(cls, string: str, dicionario_codigo: dict):
+        """
+        Converte uma string no formato `{descricao: <descricao>, valor: <valor> }`
+        em uma instância de AcaoMario.
+        """
+        pattern = r"\{descricao:([^,]+),valor:([^}]+)\}"
+        match = re.match(pattern, string.strip())
+        if not match:
+            raise ValueError("String no formato inválido.")
+
+        descricao, valor = match.groups()
+        descricao = descricao.strip()
+        valor = float(valor.strip())
+
+        # Usa um código genérico (exemplo: 0) caso não tenha sido passado.
+        instancia = cls(descricao, codigo=dicionario_codigo.get(descricao))
+        instancia.valor = valor
+        return instancia
 
 
 if __name__ == "__main__":

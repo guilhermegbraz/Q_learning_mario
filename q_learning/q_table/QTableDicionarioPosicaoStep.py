@@ -15,7 +15,6 @@ class QTableDicionarioPosicaoStep(QTableInterface):
     def q_table(self) -> dict:
         return self.q_table
 
-
     def adicionar_novo_estado(self, ram, step, acoes: List[AcaoMario]):
         chave = self.cria_chave(ram, step)
         if not self.estado_ja_existe(ram, step):
@@ -42,12 +41,10 @@ class QTableDicionarioPosicaoStep(QTableInterface):
 
         self.q_table[chave][indice_acao].valor = valor
 
-
     def retorna_acoes_estado(self, ram, step) -> List[AcaoMario]:
         chave = self.cria_chave(ram, step)
 
         return self.q_table[chave]
-
 
     def to_string(self) -> str:
         linhas = []
