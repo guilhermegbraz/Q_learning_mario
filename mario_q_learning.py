@@ -48,17 +48,18 @@ def treinar():
         'left': 64,
         'spinright': 384
     }
-    acoes = [AcaoMario(descricao, codigo) for descricao, codigo in actions_map.items()]
-    carrega_arquivo_q_table(nome_arquivo, q_table, actions_map)
-    q = QLearningMario("YoshiIsland1")
-    jogadas = 150
-    maximo_x, maximo_passo, play = q.treinar(
-        q_table, 0.7, 0.95, 0.8, jogadas, 3000, acoes, recompensa_x
-    )
-    imageio.mimsave(f"play.gif", [np.array(img) for i, img in enumerate(play)], fps=3)
-    cabecalho = f"Nessa tabela, após {jogadas} tentativas, mario atingiu a posição maxima: {maximo_x}, com {maximo_passo} iterações\n"
+    for i in range(5):
+        acoes = [AcaoMario(descricao, codigo) for descricao, codigo in actions_map.items()]
+        carrega_arquivo_q_table(nome_arquivo, q_table, actions_map)
+        q = QLearningMario("YoshiIsland1")
+        jogadas = 150
+        maximo_x, maximo_passo, play = q.treinar(
+            q_table, 0.7, 0.95, 0.8, jogadas, 3000, acoes, recompensa_x
+        )
+        imageio.mimsave(f"play.gif", [np.array(img) for i, img in enumerate(play)], fps=3)
+        cabecalho = f"Nessa tabela, após {jogadas} tentativas, mario atingiu a posição maxima: {maximo_x}, com {maximo_passo} iterações\n"
 
-    salvar_q_table(q_table, nome_arquivo, cabecalho)
+        salvar_q_table(q_table, nome_arquivo, cabecalho)
 
     return
 
