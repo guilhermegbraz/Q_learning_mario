@@ -21,3 +21,8 @@ class QTableDicionarioState(QTableDicionarioPosicaoStep):
         else:
             print(f"Chave com tamanho errado: {len(chave)}")
         return False
+
+    def adiciona_elemento_step(self, step, acoes: List[str], dicionario_codigos: dict) -> bool:
+        acoes_mario = list(map(lambda a: AcaoMario.from_string(a, dicionario_codigos), acoes))
+        self.q_table[str(step)] = acoes_mario
+        return True

@@ -10,15 +10,17 @@ class QTableDicionarioIntervaloState(QTableDicionarioPosicaoStep):
         self.q_table: Dict[str, List[AcaoMario]] = {}
 
     def cria_chave(self, ram, step):
+        print("Criando chave")
         state, x, _ = rominfo.getState(ram, 6)
         return f"trecho: {x // 3500} state: {state}"
 
-
     def adiciona_elemento(self, chave: str, acoes: List[str], dicionario_codigos: dict) -> bool:
         if len(chave) >= 344:
+            # c = f"trecho: 0 {chave}"
             acoes_mario = list(map(lambda a: AcaoMario.from_string(a, dicionario_codigos), acoes))
             self.q_table[chave] = acoes_mario
             return True
         else:
             print(f"Chave com tamanho errado: {len(chave)}")
         return False
+
