@@ -10,26 +10,9 @@ import sys
 os.environ['TERM'] = 'xterm'
 
 
-def compute_reward(old_x, old_y, new_x, new_y, collision, info):
-    recompensa = 0
-    if collision:
-        return -100
-    if new_x > old_x: recompensa += 500
-    if new_x < old_x: recompensa -= 5
-    if new_y > old_y: recompensa += 30
-    if new_y < old_y: recompensa -= 10
-    if new_x == old_x: recompensa -= 500
-
-    return recompensa
-
-
 def recompensa_x(old_x, old_y, new_x, new_y, collision, info, score_atual=None) -> int:
     recompensa = 0
-    if collision and new_y > old_y:
-        return -100
-    if collision and new_y < old_y: return -100
     if collision: return -100
-    if new_y > 354: return 0
     if info["score"] > score_atual: recompensa += info["score"] - score_atual
     if new_x > old_x: recompensa += 5 + new_x - old_x
     if new_x < old_x: recompensa += 1
@@ -56,7 +39,7 @@ def treinar():
         maximo_x, maximo_passo, play = q.treinar(
             q_table, 0.7, 0.95, 0.8, jogadas, 3000, acoes, recompensa_x
         )
-        imageio.mimsave(f"play.gif", [np.array(img) for i, img in enumerate(play)], fps=3)
+        imageio.mimsave(f"play.gif", [np.array(img) for i, img in enumerate(play)], fps=30)
         cabecalho = f"Nessa tabela, após {jogadas} tentativas, mario atingiu a posição maxima: {maximo_x}, com {maximo_passo} iterações\n"
 
         salvar_q_table(q_table, nome_arquivo, cabecalho)
@@ -110,20 +93,22 @@ def jogar():
     q = QLearningMario("YoshiIsland1")
     jogadas = 50
     maximo_x, maximo_passo, play = q.treinar(
-        q_table, 0.0, 0.0, 0.0, jogadas, 70, acoes, recompensa_x
+        q_table, 0.0, 0.0, 0.0, jogadas, 130, acoes, recompensa_x
     )
-    imageio.mimsave(f"play.gif", [np.array(img) for i, img in enumerate(play)], fps=3)
+    imageio.mimsave(f"play.gif", [np.array(img) for i, img in enumerate(play)], fps=30)
 
     return
 
 
 if __name__ == "__main__":
     # Recebe o parâmetro da linha de comando
-    parametro = sys.argv[1] if len(sys.argv) > 1 else "treinar"
+    parametro = sys.argv[1] if len(sys.argv) > 1 else "jogar"
 
     if parametro == "jogar":
+        print("Modo: JOGAR")
         jogar()
     elif parametro == "treinar":
+        print("Modo: TREINAR")
         treinar()
     else:
         treinar()

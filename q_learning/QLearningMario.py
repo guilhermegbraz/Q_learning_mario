@@ -18,51 +18,30 @@ class QLearningMario:
         radius = 6
         n_actions = len(acoes)
         env = retro.make(game='SuperMarioWorld-Snes', state=self.fase, players=1)
-        maximo_passos = 0
         pos_x = 0
         for episode in range(n_episodes):
             score_atual = 0
-            play = []
-            escolhas = []
+            play, escolhas = [], []
             print(f"Iniciando episódio {episode + 1}/{n_episodes}...")
             env.reset()
-            img = env.render(mode='rgb_array')
-            play.append(img)
+            self.salva_frame_play(play, env)
             ram = self.getRam(env)
             state, x, y = getState(ram, radius=radius)
             for step in range(max_steps_per_episode):
-
                 if not q_table.estado_ja_existe(ram, step):
                     q_table.adicionar_novo_estado(ram, step, acoes)
+                epsilon_ = self.get_epsilon(q_table, ram, step, epsilon)
+                indice_acao = self.escolhe_acao(acoes, epsilon_, q_table, ram, step, n_actions)
 
-                if (0.0 in [a.valor for a in q_table.retorna_acoes_estado(ram, step)] or
-                        all(x.valor < 0.0 for x in q_table.retorna_acoes_estado(ram, step))):
-                    epsilon_ = epsilon
-                else:
-                    epsilon_ = 0
-
-                # Escolha de ação (política epsilon-greedy)
-                if np.random.uniform(0, 1) < epsilon_:
-                    indice_acao = np.random.randint(0, n_actions)  # Explorar
-                else:
-                    indice_acao = acoes.index(q_table.get_acao_maxima(ram, step))
-
-                # print(f"posicao mario: ({x}, {y})")
-                # print(f"Mario esta no chao? : {self.mario_esta_no_chao(getState(ram, radius)[0], radius)}")
-                # self.printState(getState(ram, radius)[0], radius)
-                # print(150 * "-")
-                # Executa ação no jogo
                 rw, info = utils.performAction(acoes[indice_acao].codigo, env)
-                env.render()
-                img = env.render(mode='rgb_array')
-                play.append(img)
+                self.salva_frame_play(play, env)
                 ram_novo_estado = self.getRam(env)
                 new_state, new_x, new_y = getState(ram_novo_estado, radius=radius)
                 collision = self.mario_esta_morto(ram_novo_estado)
                 escolhas.append({"state": q_table.cria_chave(ram, step), "acao": indice_acao})
 
                 if not self.mario_esta_no_chao(getState(ram_novo_estado, radius)[0], radius) and not collision:
-                    info, collision = self.espera_mario_voltar_chao(env, radius)
+                    info, collision = self.espera_mario_voltar_chao(env, radius, play)
                     ram_novo_estado = self.getRam(env)
                     new_state, new_x, _ = getState(ram_novo_estado, radius=radius)
 
@@ -79,7 +58,6 @@ class QLearningMario:
                         q_table.retorna_acoes_estado(ram, step)[indice_acao].valor)
                 q_table.atualiza_valor_acao_estado(ram, step, indice_acao, valor_atualizado)
 
-
                 if collision:
                     break
                 elif step == max_steps_per_episode - 1:
@@ -94,6 +72,13 @@ class QLearningMario:
                 ram, state, x, y = ram_novo_estado, new_state, new_x, new_y
         env.close()
         return pos_x, step, play
+
+    def escolhe_acao(self, acoes, epsilon, q_table, ram, step, n_actions):
+        if np.random.uniform(0, 1) < epsilon:
+            indice_acao = np.random.randint(0, n_actions)  # Explorar
+        else:
+            indice_acao = acoes.index(q_table.get_acao_maxima(ram, step))
+        return indice_acao
 
     def pontuar_linha_vencedora(self, q_table: QTableInterface, escolhas: List[dict]):
         for escolha in escolhas:
@@ -129,12 +114,13 @@ class QLearningMario:
                 return matrix[i + 1][indice_mario] == '$$' or matrix[i + 1][indice_mario] == '@@'
         return False
 
-    def espera_mario_voltar_chao(self, env, radius) -> (any, bool):
+    def espera_mario_voltar_chao(self, env, radius, play: list) -> (any, bool):
         rw, info = None, None
         while not self.mario_esta_no_chao(getState(self.getRam(env), radius)[0], radius):
-            rw, info = utils.performAction(131, env)
-            rw, info = utils.performAction(1, env)
-            env.render()
+            _, info = utils.performAction(131, env)
+            self.salva_frame_play(play, env)
+            _, info = utils.performAction(1, env)
+            self.salva_frame_play(play, env)
             if self.mario_esta_morto(self.getRam(env)): return info, True
         return info, False
 
@@ -146,3 +132,17 @@ class QLearningMario:
 
     def mario_esta_morto(self, ram) -> bool:
         return False or ram[0x71]
+
+
+    def salva_frame_play(selfself, play, env):
+        img = env.render(mode='rgb_array')
+        play.append(img)
+        env.render()
+
+    def get_epsilon(self, q_table, ram, step, epsilon):
+        if (0.0 in [a.valor for a in q_table.retorna_acoes_estado(ram, step)] or
+                all(x.valor < 0.0 for x in q_table.retorna_acoes_estado(ram, step))):
+            epsilon_ = epsilon
+        else:
+            epsilon_ = 0
+        return epsilon_
